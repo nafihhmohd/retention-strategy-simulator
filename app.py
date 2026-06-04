@@ -62,7 +62,7 @@ footer,#MainMenu,header { visibility:hidden; }
 </style>
 """, unsafe_allow_html=True)
 
-# ── DATA GENERATION (mirrors your exact notebook logic) ──────
+# ── DATA GENERATION ──────
 @st.cache_data
 def generate_project_data():
     np.random.seed(42)
@@ -82,11 +82,11 @@ def generate_project_data():
         "tenure": tenure
     })
 
-    # Step 4: Churn flag — 120-day inactivity (your exact rule)
+    # Step 4: Churn flag — 120-day inactivity
     CHURN_DAYS = 120
     df["churn_flag"] = (df["recency"] > CHURN_DAYS).astype(int)
 
-    # Step 5: Logistic Regression churn probability (your exact approach)
+    # Step 5: Logistic Regression churn probability
     X = df[["recency", "frequency", "tenure", "monetary"]]
     y = df["churn_flag"]
     scaler = StandardScaler()
@@ -95,14 +95,14 @@ def generate_project_data():
     model.fit(X_scaled, y)
     df["churn_probability"] = model.predict_proba(X_scaled)[:, 1]
 
-    # Step 6: BG/NBD-inspired CLV (6-month, matching your lifetimes approach)
+    # Step 6: BG/NBD-inspired CLV (6-month)
     purchase_rate = df["frequency"] / df["tenure"].clip(lower=1)
     df["clv_6m"] = (purchase_rate * df["monetary"] * 180 * 0.25 * 0.85).clip(lower=0)
 
     # Step 7: Revenue at Risk
     df["revenue_at_risk"] = df["churn_probability"] * df["clv_6m"]
 
-    # Risk tiers (your exact percentile logic: 0–50 Low, 50–80 Medium, 80–100 High)
+    # Risk tiers (percentile logic: 0–50 Low, 50–80 Medium, 80–100 High)
     df["risk_tier"] = pd.qcut(
         df["revenue_at_risk"],
         q=[0, 0.5, 0.8, 1.0],
@@ -186,7 +186,7 @@ if page == "🏠  Project Overview":
     st.markdown('<div class="page-title">Retention Strategy Simulator</div>', unsafe_allow_html=True)
     st.markdown('<div class="page-sub">From Churn & CLV to Revenue-Focused Decision Making · UCI Online Retail II</div>', unsafe_allow_html=True)
 
-    # Clickable navigation cards — works even when sidebar is collapsed
+    # Clickable navigation cards
     nav_pages = [
         ("📉", "Churn Analysis", "Logistic Regression · Risk tiers · Recency scatter"),
         ("💰", "CLV & Revenue Risk", "BG/NBD · Gamma-Gamma · Top 20 at-risk"),
@@ -572,7 +572,7 @@ elif page == "🔍  Customer Lookup":
         monetary  = st.slider("Monetary — avg order value (£)", 10, 5000, 320)
         tenure    = st.slider("Tenure — days as customer", 1, 730, 200)
 
-    # Scale and predict using your notebook's exact trained model
+    # Scale and predict using trained model
     input_data = np.array([[recency, frequency, tenure, monetary]])
     input_scaled = scaler.transform(input_data)
     churn_prob = model.predict_proba(input_scaled)[0][1]
